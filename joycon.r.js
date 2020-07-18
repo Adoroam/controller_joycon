@@ -49,7 +49,7 @@ const is_release = buffcode => buffcode === release
 let joycon = init_joycon('98b6e9fc2f2e')
 
 // CREATE EVENT LISTENER
-joycon.on('data', buffer => {  
+joycon.on('data', buffer => {
   // COMPRESS BUFFER DATA
   const buffcode = map_data(buffer)
   // ADD NEW BUFFER DATA TO FILE

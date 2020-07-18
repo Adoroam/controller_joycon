@@ -9,7 +9,7 @@ const HID = require('node-hid')
 const fs = require('fs')
 
 // BUFFER MAPPINGS
-const buffers = require('./buffers')
+const { buffers, release } = require('./buffers')
 
 /*==============================
 ========== CONSTANTS ===========
@@ -39,9 +39,7 @@ const map_data = buffer => {
   return compress(json_obj.data)
 }
 
-const is_release = input => buffers
-  .filter(({ button }) => button === 'q')
-  .some(({ data }) => data === input)
+const is_release = buffcode => buffcode === release
 
 /*==============================
 ========== LISTENERS ===========
@@ -50,16 +48,16 @@ const is_release = input => buffers
 // CREATE HID DEVICE INSTANCE
 let joycon = init_joycon('98b6e9fc2f2e')
 
-joycon.on('data', buffer => {
-  let input = map_data(buffer)
-  let found = buffers.find(({ data }) => input === data)
-  !!found
-    ? is_release(input)
-      ? joycon.emit('released')
-      : found.button.startsWith('j')
-        ? joycon.emit('direction', found.button.replace(/j_(.+)/i, '$1'))  
-        : joycon.emit('button', found.button)
-    : fs.appendFileSync('./new_input.json', input + '\n')
+// CREATE EVENT LISTENER
+joycon.on('data', buffer => {  
+  // COMPRESS BUFFER DATA
+  const buffcode = map_data(buffer)
+  // ADD NEW BUFFER DATA TO FILE
+  if (!buffers[buffcode]) fs.appendFileSync('./new_input.json', buffcode + '\n')
+  // EMIT RELEASE OR INPUT EVENT
+  else buffcode === release
+    ? joycon.emit('RELEASED')
+    : joycon.emit('INPUT', buffers[buffcode])
 })
 
 joycon.on('error', err => console.error(err))

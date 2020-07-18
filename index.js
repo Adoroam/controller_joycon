@@ -1,21 +1,14 @@
-const [bin, file, mapping] = process.argv
-if (!mapping) {
-  console.error('no mapping specified')
-  process.exit(0)
-}
+const [bin, file, mapfile='default'] = process.argv
 
 const { joycon } = require('./joycon.r')
-const { press_key } = require('./keyboard')
-const { buttons, thumbstick } = require(`./mappings/${mapping}`)
+const mapping = require(`./mappings/${mapfile}`)
 
-console.log(`process started with ${mapping} mapping.`)
+console.log(`process started with ${mapfile} mapping.`)
 
-joycon.on('button', (data) => {
-  Object.entries(buttons).map(([key, v]) => data === key && press_key(v))
-  // .filter(([key, v]) => data === key)
-  // .map(([key, v]) => press_key(v))
-})
-
-joycon.on('direction', (data) => {
-  Object.entries(thumbstick).map(([key, v]) => data === key && press_key(v))
+joycon.on('INPUT', data => {
+  try {
+    Object.keys(mapping).includes(data) && mapping[data]()
+  } catch (error) {
+    console.error(error)
+  }
 })

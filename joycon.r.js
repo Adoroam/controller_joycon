@@ -60,7 +60,7 @@ joycon.on('data', buffer => {
     : joycon.emit('INPUT', buffers[buffcode])
 })
 
-joycon.on('error', err => console.error(err))
+joycon.on('error', console.error)
 
 /*==============================
 =========== EXPORTS ============
